@@ -21,8 +21,8 @@ st.markdown("Modello stocastico avanzato con correlazione di Cholesky e transizi
 
 # --- 2. DATI STORICI ---
 h_y = np.array([2023, 2024, 2025, 2026])
-h_p = np.array([107.2, 104.5, 101.8, 100.0]) # Trend PIL storico
-h_i = np.array([55.0, 70.0, 85.0, 100.0])    # Trend Prezzi storico
+h_p = np.array([107.2, 104.5, 101.8, 100.0]) 
+h_i = np.array([55.0, 70.0, 85.0, 100.0])
 
 # --- 3. PANNELLO DI CONTROLLO (SIDEBAR) ---
 st.sidebar.header("📡 Dati Live (Mercato Nero)")
@@ -73,4 +73,62 @@ for t in range(1, anni + 1):
     shock_off = dp_off + vol_off * Z1
     shock_inf = dp_inf + vol_inf * (rho * Z1 + np.sqrt(1 - rho**2) * Z2)
     
-    hi = np.random.normal(di, vol_
+    # RIGA CORRETTA QUI SOTTO:
+    hi = np.random.normal(di, vol_off * 1.3, it)
+    
+    ev = np.random.random(it)
+    shock_off[ev < (cp/100)] -= 0.18
+    shock_inf[ev < (cp/100)] -= 0.05
+    shock_off[ev > (1 - pp/100)] += 0.14
+    shock_inf[ev > (1 - pp/100)] += 0.08
+    
+    sp_off[t] = sp_off[t-1] * (1 + shock_off)
+    sp_inf[t] = sp_inf[t-1] * (1 + shock_inf)
+    si[t] = si[t-1] * (1 + hi)
+
+sp_tot = np.zeros((anni + 1, it))
+for t in range(anni + 1):
+    sp_tot[t] = (1 - pesi_sommerso[t]) * sp_off[t] + pesi_sommerso[t] * sp_inf[t]
+
+# --- 5. GRAFICI ---
+x_p = np.arange(2026, 2026 + anni + 1)
+c1, c2 = st.columns(2)
+
+f1, a1 = plt.subplots(figsize=(8, 4))
+p_tot = np.percentile(sp_tot, [5, 50, 95], axis=1)
+p_off = np.percentile(sp_off, 50, axis=1)
+p_inf = np.percentile(sp_inf, 50, axis=1)
+
+a1.plot(h_y, h_p, 'ko-', lw=2, label="Storico 23-26")
+a1.plot(x_p, sp_tot[:, :100], color='gray', alpha=0.03) 
+a1.fill_between(x_p, p_tot[0], p_tot[2], color='#0D47A1', alpha=0.2, label="Rischio Totale 90%")
+a1.plot(x_p, p_off, color='#d62728', lw=2, linestyle=':', label="Stato (Ufficiale)")
+a1.plot(x_p, p_inf, color='#ff7f0e', lw=2, linestyle='-.', label="Mercato Nero")
+a1.plot(x_p, p_tot[1], color='#1565C0', lw=3, label="PIL Reale Effettivo")
+a1.set_title("PIL: Dinamica Dual Economy (Base 100)", fontweight='bold')
+a1.legend(loc='lower left')
+c1.pyplot(f1)
+
+f2, a2 = plt.subplots(figsize=(8, 4))
+p_si = np.percentile(si, [5, 50, 95], axis=1)
+a2.plot(h_y, h_i, 'ko-', lw=2, label="Storico 23-26")
+a2.plot(x_p, si[:, :200], color='gray', alpha=0.03)
+a2.fill_between(x_p, p_si[0], p_si[2], color='#B71C1C', alpha=0.2, label="Rischio 90%")
+a2.plot(x_p, p_si[1], color='#C62828', lw=3, label="Proiezione 3y")
+a2.set_title("Inflazione e Svalutazione (Base 100 = Oggi)", fontweight='bold')
+a2.legend(loc='upper left')
+c2.pyplot(f2)
+
+# --- 6. METRICHE ---
+st.divider()
+st.subheader("📊 Analisi Accademica (Scenari 2029)")
+
+m_f, s_f = np.mean(sp_tot[-1]), np.std(sp_tot[-1])
+sk = np.mean(((sp_tot[-1] - m_f)/s_f)**3)
+ku = np.mean(((sp_tot[-1] - m_f)/s_f)**4) - 3
+
+m1, m2, m3, m4 = st.columns(4)
+m1.metric("Var. PIL Effettivo", f"{p_tot[1][-1]-100:.1f}%", f"Solo Stato: {p_off[-1]-100:.1f}%", delta_color="normal")
+m2.metric("Var. Prezzi", f"{p_si[1][-1]-100:.1f}%")
+m3.metric("Skewness (Asimmetria)", f"{sk:.2f}")
+m4.metric("Kurtosis (Rischio Code)", f"{ku:.2f}")
