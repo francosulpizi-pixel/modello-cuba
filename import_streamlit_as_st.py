@@ -17,7 +17,7 @@ hide_style = """
 st.markdown(hide_style, unsafe_allow_html=True)
 
 st.title("Stress Test & Dual Economy: Proiezione a 3 Anni")
-st.markdown("Modello stocastico avanzato con correlazione di Cholesky e transizione logistica del mercato informale.")
+st.markdown("Modello stocastico con correlazione di Cholesky e transizione logistica del mercato informale.")
 
 # --- 2. DATI STORICI ---
 h_y = np.array([2023, 2024, 2025, 2026])
