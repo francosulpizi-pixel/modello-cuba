@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 st.set_page_config(page_title="Cuba Risk 3Y & Dual Economy", layout="wide")
 st.title("Stress Test & Dual Economy: Proiezione a 3 Anni")
 st.markdown(
-    "Modello stocastico avanzato con correlazione di Cholesky "
+    "Modello stocastico con correlazione di Cholesky "
     "e transizione logistica del mercato informale."
 )
 
@@ -24,13 +24,13 @@ h_p = np.array([106.4, 104.3, 99.1, 100.0])
 h_i = np.array([55.0, 70.0, 85.0, 100.0])
 
 # --- 3. PANNELLO DI CONTROLLO (LEVE LATERALI) ---
-st.sidebar.header("📡 Dati Live (Mercato Nero)")
+st.sidebar.header(" Dati Live (Mercato Nero)")
 
 # Tasso elTOQUE indicativo: 1 USD ≈ 525 CUP il 13/04/2026 [elTOQUE]
 cup = st.sidebar.number_input("CUP/USD (es. elTOQUE)", 100, 1000, 525, 5)
 
 st.sidebar.divider()
-st.sidebar.header("⚖️ Leve Dual Economy")
+st.sidebar.header(" Leve Dual Economy")
 st.sidebar.markdown("*Dinamica Sigmoide (Non-Lineare)*")
 
 # Peso sommerso oggi: ~50% considerando MIPYME + mercato informale
@@ -39,7 +39,7 @@ w_init = st.sidebar.slider("Peso Sommerso Oggi (%)", 10, 80, 50) / 100
 w_fin = st.sidebar.slider("Peso Sommerso 2029 (%)", 10, 90, 62) / 100
 
 st.sidebar.divider()
-st.sidebar.header("📊 Shock Macro")
+st.sidebar.header(" Shock Macro")
 
 # SHOCK ENERGETICO – deficit medio ≈ 1500–1800 MW su domanda ≈ 3000 MW → ~50–60%
 # Default di partenza oggi: -50% (shock negativo forte)
@@ -53,7 +53,7 @@ rs = st.sidebar.slider("Shock Rimesse (%)", -80, 50, -40)
 sv = st.sidebar.slider("Sentiment / Incertezza", -1.0, 1.0, -0.7)
 
 st.sidebar.divider()
-st.sidebar.header("🦢 Eventi Estremi")
+st.sidebar.header(" Eventi Estremi")
 # Prob. annua di cigno nero positivo/negativo (in %)
 cp = st.sidebar.slider("Cigno Nero (%)", 0, 20, 5)
 pp = st.sidebar.slider("Cigno Bianco (%)", 0, 20, 1)
@@ -169,7 +169,7 @@ c2.pyplot(f2)
 
 # --- 6. METRICHE NUMERICHE E STATISTICHE ---
 st.divider()
-st.subheader("📊 Analisi Accademica (Scenari 2029)")
+st.subheader(" Analisi (Scenari 2029)")
 
 m_f, s_f = np.mean(sp_tot[-1]), np.std(sp_tot[-1])
 sk = np.mean(((sp_tot[-1] - m_f) / s_f) ** 3)
